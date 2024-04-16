@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Records</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .chart-container {
+            width: 90%;
+            max-width: 800px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                width: 70%;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .chart-container {
+                width: 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <canvas id="weeklyChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="monthlyChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="yearlyChart"></canvas>
+    </div>
+
+    <script>
+        // Function to fetch data from the server
+        async function fetchData(url) {
+            const response = await fetch(url);
+            const data = await response.json();
+            return data;
+        }
+
+        // Function to create a chart
+        function createChart(canvasId, labels, data, label) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fetch weekly data and create chart
+        fetchData('http://localhost:3000/weekly')
+            .then(data => {
+                const weeks = data.map(item => item.week);
+                const temperatures = data.map(item => item.avg_temperature);
+                createChart('weeklyChart', weeks, temperatures, 'Weekly Average Temperature');
+            });
+
+        // Fetch monthly data and create chart
+        fetchData('http://localhost:3000/monthly')
+            .then(data => {
+                const months = data.map(item => item.month);
+                const temperatures = data.map(item => item.avg_temperature);
+                createChart('monthlyChart', months, temperatures, 'Monthly Average Temperature');
+            });
+
+        // Fetch yearly data and create chart
+        fetchData('http://localhost:3000/yearly')
+            .then(data => {
+                const years = data.map(item => item.year);
+                const temperatures = data.map(item => item.avg_temperature);
+                createChart('yearlyChart', years, temperatures, 'Yearly Average Temperature');
+            });
+    </script>
+</body>
+</html>
